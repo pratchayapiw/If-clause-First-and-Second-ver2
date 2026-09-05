@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ภารกิจรักษ์โลก | If-Clause Type 2</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Sarabun',sans-serif;background:linear-gradient(160deg,#d3f9d8,#e7f5ff);min-height:100vh;padding:20px;color:#212529}
+.wrap{max-width:820px;margin:0 auto}
+.card{background:#fff;border-radius:20px;padding:28px;box-shadow:0 10px 30px rgba(0,0,0,.08);margin-bottom:18px}
+h1{font-size:1.6rem;color:#2b8a3e;text-align:center;margin-bottom:4px}
+h2{font-size:1.3rem;color:#1864ab;margin-bottom:10px}
+h3{font-size:1.05rem;color:#2b8a3e;margin:14px 0 8px}
+.sub{text-align:center;color:#868e96;font-size:.9rem;margin-bottom:14px}
+.hint{color:#868e96;font-size:.92rem;margin-bottom:14px}
+input,select,textarea{font-family:inherit;font-size:1rem;padding:11px 14px;border:2px solid #dee2e6;border-radius:12px;width:100%;outline:none;background:#fff}
+input:focus,select:focus,textarea:focus{border-color:#40c057}
+textarea{min-height:70px;resize:vertical}
+.btn{font-family:inherit;font-size:1rem;font-weight:600;padding:12px 22px;border:none;border-radius:14px;background:#4dabf7;color:#fff;cursor:pointer;margin:4px 6px 4px 0;transition:.15s}
+.btn:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
+.btn.ok{background:#40c057}
+.btn.ghost{background:#f1f3f5;color:#495057}
+.q{background:#f8f9fa;border-left:5px solid #40c057;border-radius:12px;padding:14px 16px;margin-bottom:12px}
+.q b{color:#1864ab}
+.opts{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.opt{padding:9px 16px;border:2px solid #dee2e6;border-radius:20px;cursor:pointer;background:#fff;font-size:.95rem}
+.opt:hover{border-color:#40c057}
+.opt.sel{background:#40c057;color:#fff;border-color:#40c057}
+.tok{display:inline-block;padding:8px 14px;margin:4px;border:2px solid #dee2e6;border-radius:12px;background:#fff;cursor:pointer;font-size:.95rem}
+.tok:hover{border-color:#4dabf7}
+.slot{min-height:52px;background:#f1f3f5;border:2px dashed #ced4da;border-radius:12px;padding:6px;margin-top:8px}
+.bar{display:flex;gap:6px;margin-bottom:16px}
+.dot{flex:1;height:9px;border-radius:6px;background:#dee2e6}
+.dot.on{background:#40c057}
+.dot.now{background:#4dabf7}
+.fb{margin-top:10px;padding:10px 14px;border-radius:10px;font-weight:600}
+.fb.good{background:#d3f9d8;color:#2b8a3e}
+.fb.bad{background:#ffe3e3;color:#c92a2a}
+.notice{background:#fff9db;border-left:5px solid #fab005;border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:.92rem}
+table{width:100%;border-collapse:collapse;margin:12px 0}
+th,td{padding:10px;border-bottom:1px solid #e9ecef;text-align:center}
+th{background:#e7f5ff;color:#1864ab}
+.cert{border:8px double #40c057;border-radius:18px;padding:30px;text-align:center;background:#fbfff9}
+.cert .nm{font-size:1.8rem;font-weight:800;color:#1864ab;margin:12px 0;border-bottom:2px dotted #adb5bd;display:inline-block;padding:0 24px 6px}
+.big{font-size:2.6rem;font-weight:800;color:#2b8a3e}
+@media print{body{background:#fff;padding:0}.no-print{display:none!important}.card{box-shadow:none;page-break-inside:avoid}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <h1>🌱 ภารกิจรักษ์โลก</h1>
+    <p class="sub">เรียนรู้ If-Clause Type 2 ผ่าน 5 ด่านท้าทาย</p>
+    <div class="bar" id="bar"></div>
+    <div id="content"></div>
+  </div>
+</div>
+
+<script>
+/* ====== ตั้งค่า: วาง URL ของ Google Apps Script (ลงท้าย /exec) ====== */
+const GAS_URL = "";
+
+const $ = id => document.getElementById(id);
+const state = { name:'', room:'', no:'', stage:0, scores:{1:0,2:0,3:0,4:0,5:0}, sent:false };
+const save = () => localStorage.setItem('ifclause_v2', JSON.stringify(state));
+
+/* ================= ข้อมูลคำถาม 5 ด่าน ================= */
+const L1 = [
+ {q:"If people ______ more plastic, the ocean would be cleaner.", o:["recycled","recycle","will recycle"], a:0},
+ {q:"If we used less plastic, sea turtles ______ safer.", o:["will be","would be","are"], a:1},
+ {q:"If I ______ a scientist, I would invent a plastic-eating machine.", o:["am","was going","were"], a:2},
+ {q:"If the air ______ cleaner, children would be healthier.", o:["were","is","will be"], a:0},
+ {q:"If everyone planted a tree, the earth ______ cooler.", o:["is","would be","will be"], a:1}
+];
+const L2 = [
+ {q:"If we ______ water, the village would not be dry.", v:"save", a:["saved"]},
+ {q:"If the forest were protected, animals ______ a home.", v:"have", a:["would have"]},
+ {q:"If I ______ someone littering, I would speak up.", v:"see", a:["saw"]},
+ {q:"If cities used solar power, pollution ______.", v:"drop", a:["would drop"]},
+ {q:"If she ______ the mayor, she would ban plastic bags.", v:"be", a:["were","was"]}
+];
+const L3 = [
+ "If I had a bike , I would not use a car .",
+ "If we turned off the lights , we would save energy .",
+ "If the river were clean , people would swim there .",
+ "If they recycled paper , fewer trees would be cut ."
+];
+const L4 = [
+ {l:"If the sea level rose,", r:"many islands would disappear."},
+ {l:"If we stopped using plastic straws,", r:"sea animals would be safer."},
+ {l:"If everyone rode a bicycle,", r:"the air would be fresher."},
+ {l:"If people saved electricity,", r:"we would burn less coal."},
+ {l:"If schools grew vegetables,", r:"students would eat healthier food."}
+];
+const L5 = [
+ "ถ้าฉันมีพลังวิเศษ ฉันจะทำความสะอาดทะเลทั้งหมด",
+ "ถ้าโรงเรียนของฉันไม่มีขยะพลาสติก โรงเรียนจะสวยขึ้น",
+ "ถ้าทุกคนปลูกต้นไม้คนละหนึ่งต้น โลกจะเย็นลง"
+];
+
+/* ================= ระบบพื้นฐาน ================= */
+function drawProgress(){
+  $('bar').innerHTML = [1,2,3,4,5].map(i =>
+    `<div class="dot ${state.stage>i?'on':state.stage===i?'now':''}"></div>`).join('');
+}
+const norm = s => s.toLowerCase().replace(/[.,!?]/g,'').replace(/\s+/g,' ').trim();
+
+/* ================= ตรวจสอบชื่อภาษาอังกฤษ ================= */
+const EN_NAME = /^[A-Za-z][A-Za-z\s.'-]{1,49}$/;
+const hasThai = s => /[\u0E00-\u0E7F]/.test(s);
+
+function validateName(v){
+  const s = v.trim();
+  if(!s)                        return "กรุณากรอกชื่อ-นามสกุลก่อนเริ่มนะครับ";
+  if(hasThai(s))                return "⚠️ กรุณาพิมพ์ชื่อเป็นภาษาอังกฤษเท่านั้น (English only)";
+  if(/[0-9]/.test(s))           return "⚠️ ชื่อไม่ควรมีตัวเลข";
+  if(!EN_NAME.test(s))          return "⚠️ ใช้ได้เฉพาะตัวอักษรภาษาอังกฤษ A–Z เท่านั้น";
+  if(s.split(/\s+/).length < 2) return "⚠️ กรุณาพิมพ์ทั้งชื่อและนามสกุล เช่น Somchai Jaidee";
+  return "";
+}
+function titleCase(s){
+  return s.trim().toLowerCase().split(/\s+/)
+          .map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+}
+function liveCheck(el){
+  const before = el.value;
+  el.value = before.replace(/[^A-Za-z\s.'-]/g,'');
+  const warn = $('warn');
+  if(before !== el.value && hasThai(before)){
+    warn.textContent = "⚠️ พิมพ์เป็นภาษาอังกฤษเท่านั้น — กดปุ่ม ~ หรือ Alt+Shift เพื่อสลับแป้นพิมพ์";
+    el.style.borderColor = '#fa5252';
+  }else if(el.value.trim() === ''){
+    warn.textContent = ''; el.style.borderColor = '#dee2e6';
+  }else{
+    const msg = validateName(el.value);
+    warn.textContent = msg;
+    el.style.borderColor = msg ? '#ffa94d' : '#40c057';
+  }
+}
+
+/* ================= หน้าแรก ================= */
+function home(){
+  state.stage = 0; drawProgress();
+  $('content').innerHTML = `
+    <h2>ยินดีต้อนรับสู่ภารกิจรักษ์โลก 🌱</h2>
+    <p class="hint">ฝึก If-Clause Type 2 ผ่าน 5 ด่าน แล้วรับเกียรติบัตร</p>
+
+    <div class="notice">
+      🔤 <b>Name in English only</b> — กรุณาพิมพ์ชื่อ-นามสกุลเป็น<b>ภาษาอังกฤษ</b>
+      เพราะเกียรติบัตรจะออกเป็นภาษาอังกฤษ<br>
+      <span style="color:#868e96">ตัวอย่าง: Somchai Jaidee / Kanya Sukjai</span>
+    </div>
+
+    <input type="text" id="userName" placeholder="Full name in English (e.g. Somchai Jaidee)"
+           value="${state.name||''}" autocomplete="off" autocapitalize="words"
+           spellcheck="false" maxlength="50" lang="en"
+           oninput="liveCheck(this)"
+           onkeypress="return /[A-Za-z\\s.'-]/.test(event.key)">
+
+    <div style="display:flex;gap:10px;margin-top:10px">
+      <input type="text" id="userRoom" placeholder="ห้อง เช่น M.3/1" value="${state.room||''}"
+             oninput="this.value=this.value.replace(/[^A-Za-z0-9./\\-\\s]/g,'')">
+      <input type="text" id="userNo" placeholder="เลขที่" value="${state.no||''}"
+             style="max-width:120px" inputmode="numeric"
+             oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+    </div>
+
+    <p id="warn" style="color:#fa5252;min-height:22px;margin:8px 0;font-size:.92rem"></p>
+    <button class="btn ok" onclick="begin()">เริ่มภารกิจ 🚀</button>`;
+}
+function begin(){
+  const el = $('userName');
+  const msg = validateName(el.value);
+  if(msg){
+    $('warn').textContent = msg;
+    el.style.borderColor = '#fa5252';
+    el.focus();
+    el.animate([{transform:'translateX(0)'},{transform:'translateX(-6px)'},
+                {transform:'translateX(6px)'},{transform:'translateX(0)'}],{duration:250});
+    return;
+  }
+  state.name = titleCase(el.value);
+  state.room = $('userRoom').value.trim();
+  state.no   = $('userNo').value.trim();
+  state.scores = {1:0,2:0,3:0,4:0,5:0};
+  state.sent = false; save();
+  startLevel(1);
+}
+function startLevel(n){
+  state.stage = n; drawProgress(); window.scrollTo(0,0);
+  [lv1,lv2,lv3,lv4,lv5][n-1]();
+}
+function finishLevel(n, score, detail){
+  state.scores[n] = Math.round(score); save();
+  const pass = score >= 70;
+  $('content').innerHTML = `
+    <h2>${pass?'🎉 ผ่านด่าน':'💪 จบด่าน'} ${n}</h2>
+    <p class="big">${Math.round(score)} คะแนน</p>
+    <div class="fb ${pass?'good':'bad'}">${pass?'เก่งมาก! ไปด่านต่อไปกันเลย':'ไม่เป็นไร ลองทบทวนคำตอบด้านล่างนะ'}</div>
+    <h3>เฉลยและคำตอบของคุณ</h3>${detail}
+    <div style="margin-top:16px">
+      <button class="btn ghost" onclick="startLevel(${n})">🔄 เล่นด่านนี้ใหม่</button>
+      ${n<5 ? `<button class="btn ok" onclick="startLevel(${n+1})">ไปด่าน ${n+1} →</button>`
+            : `<button class="btn ok" onclick="showSummary()">ดูผลสรุป 🏆</button>`}
+    </div>`;
+}
+const mark = (ok,my,ans) =>
+  `<div class="fb ${ok?'good':'bad'}">${ok?'✅':'❌'} คุณตอบ: <b>${my||'(ว่าง)'}</b>${ok?'':` → เฉลย: <b>${ans}</b>`}</div>`;
+
+/* ================= ด่าน 1 ================= */
+function lv1(){
+  $('content').innerHTML = `<h2>ด่าน 1 — เลือกคำที่ถูกต้อง</h2>
+    <p class="hint">โครงสร้าง: If + S + V.2 , S + would + V.1</p>
+    ${L1.map((x,i)=>`<div class="q"><b>${i+1}.</b> ${x.q}
+      <div class="opts">${x.o.map((o,j)=>
+        `<div class="opt" onclick="pick1(${i},${j},this)">${o}</div>`).join('')}</div></div>`).join('')}
+    <button class="btn ok" onclick="chk1()">ตรวจคำตอบ</button>`;
+  window.ans1 = {};
+}
+function pick1(i,j,el){
+  ans1[i]=j;
+  [...el.parentNode.children].forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');
+}
+function chk1(){
+  let s=0, d='';
+  L1.forEach((x,i)=>{
+    const ok = ans1[i]===x.a; if(ok) s+=20;
+    d += `<div class="q">${i+1}. ${x.q}${mark(ok, x.o[ans1[i]], x.o[x.a])}</div>`;
+  });
+  finishLevel(1, s, d);
+}
+
+/* ================= ด่าน 2 ================= */
+function lv2(){
+  $('content').innerHTML = `<h2>ด่าน 2 — เติมคำในช่องว่าง</h2>
+    <p class="hint">เปลี่ยนกริยาในวงเล็บให้ถูกต้อง (พิมพ์เป็นภาษาอังกฤษ)</p>
+    ${L2.map((x,i)=>`<div class="q"><b>${i+1}.</b> ${x.q} <i>(${x.v})</i>
+      <input type="text" id="a2_${i}" placeholder="Type your answer" spellcheck="false"
+             autocomplete="off" style="margin-top:8px"
+             oninput="this.value=this.value.replace(/[^A-Za-z\\s']/g,'')"></div>`).join('')}
+    <button class="btn ok" onclick="chk2()">ตรวจคำตอบ</button>`;
+}
+function chk2(){
+  let s=0, d='';
+  L2.forEach((x,i)=>{
+    const my = $('a2_'+i).value.trim();
+    const ok = x.a.some(a=>norm(a)===norm(my)); if(ok) s+=20;
+    d += `<div class="q">${i+1}. ${x.q}${mark(ok,my,x.a[0])}</div>`;
+  });
+  finishLevel(2, s, d);
+}
+
+/* ================= ด่าน 3 ================= */
+function lv3(){
+  window.built = L3.map(()=>[]);
+  $('content').innerHTML = `<h2>ด่าน 3 — เรียงประโยคให้ถูกต้อง</h2>
+    <p class="hint">คลิกคำเพื่อเรียง คลิกซ้ำในกล่องล่างเพื่อเอาออก</p>
+    ${L3.map((s,i)=>{
+      const t = s.split(' ').sort(()=>Math.random()-.5);
+      return `<div class="q"><b>ประโยคที่ ${i+1}</b>
+        <div id="pool_${i}" style="margin-top:8px">${t.map(w=>
+          `<span class="tok" onclick="addTok(${i},'${w}',this)">${w}</span>`).join('')}</div>
+        <div class="slot" id="slot_${i}"></div></div>`;
+    }).join('')}
+    <button class="btn ok" onclick="chk3()">ตรวจคำตอบ</button>`;
+}
+function addTok(i,w,el){ el.style.display='none'; built[i].push({w,el}); renderSlot(i); }
+function renderSlot(i){
+  $('slot_'+i).innerHTML = built[i].map((o,k)=>
+    `<span class="tok" onclick="delTok(${i},${k})">${o.w}</span>`).join('');
+}
+function delTok(i,k){ built[i][k].el.style.display=''; built[i].splice(k,1); renderSlot(i); }
+function chk3(){
+  let s=0, d='';
+  L3.forEach((sen,i)=>{
+    const my = built[i].map(o=>o.w).join(' ');
+    const ok = norm(my)===norm(sen); if(ok) s+=25;
+    d += `<div class="q">${i+1}.${mark(ok,my,sen)}</div>`;
+  });
+  finishLevel(3, s, d);
+}
+
+/* ================= ด่าน 4 ================= */
+function lv4(){
+  const rs = L4.map(x=>x.r).sort(()=>Math.random()-.5);
+  $('content').innerHTML = `<h2>ด่าน 4 — จับคู่เหตุและผล</h2>
+    <p class="hint">เลือกผลลัพธ์ที่เข้าคู่กับเงื่อนไข</p>
+    ${L4.map((x,i)=>`<div class="q"><b>${i+1}.</b> ${x.l}
+      <select id="a4_${i}" style="margin-top:8px"><option value="">— เลือกผลลัพธ์ —</option>
+      ${rs.map(r=>`<option value="${r}">${r}</option>`).join('')}</select></div>`).join('')}
+    <button class="btn ok" onclick="chk4()">ตรวจคำตอบ</button>`;
+}
+function chk4(){
+  let s=0, d='';
+  L4.forEach((x,i)=>{
+    const my = $('a4_'+i).value;
+    const ok = my===x.r; if(ok) s+=20;
+    d += `<div class="q">${i+1}. ${x.l}${mark(ok,my,x.r)}</div>`;
+  });
+  finishLevel(4, s, d);
+}
+
+/* ================= ด่าน 5 ================= */
+function lv5(){
+  $('content').innerHTML = `<h2>ด่าน 5 — เขียนประโยคของคุณเอง</h2>
+    <p class="hint">เขียนเป็น<b>ภาษาอังกฤษ</b> ต้องมี <b>If</b> + กริยาช่อง 2 และ <b>would</b> + กริยาช่อง 1</p>
+    ${L5.map((p,i)=>`<div class="q"><b>${i+1}.</b> ${p}
+      <textarea id="a5_${i}" placeholder="If ..." spellcheck="false"
+        oninput="this.value=this.value.replace(/[\\u0E00-\\u0E7F]/g,'')"></textarea></div>`).join('')}
+    <button class="btn ok" onclick="chk5()">ตรวจคำตอบ</button>`;
+}
+function chk5(){
+  let total=0, d='';
+  L5.forEach((p,i)=>{
+    const t = $('a5_'+i).value.trim(), l = t.toLowerCase();
+    const c = [
+      {ok:/\bif\b/.test(l), t:'มีคำว่า if'},
+      {ok:/\bwould\b/.test(l), t:'มีคำว่า would'},
+      {ok:t.split(/\s+/).filter(Boolean).length>=7, t:'ความยาว 7 คำขึ้นไป'},
+      {ok:t.length>0 && !/\bwill\b/.test(l), t:'ไม่ใช้ will (เพราะเป็นเรื่องสมมติ)'}
+    ];
+    const sc = c.filter(x=>x.ok).length*25; total+=sc;
+    d += `<div class="q">${i+1}. ${p}<br><i>คำตอบ:</i> <b>${t||'(ว่าง)'}</b>
+      <div class="fb ${sc>=75?'good':'bad'}">ได้ ${sc}/100 —
+      ${c.map(x=>`${x.ok?'✅':'❌'} ${x.t}`).join(' · ')}</div></div>`;
+  });
+  finishLevel(5, total/L5.length, d);
+}
+
+/* ================= สรุปผล + เกียรติบัตร ================= */
+function showSummary(){
+  state.stage = 6; drawProgress();
+  const sc = state.scores;
+  const avg = (sc[1]+sc[2]+sc[3]+sc[4]+sc[5])/5;
+  const badge = avg>=90?'🏆 ดีเยี่ยม':avg>=80?'🥇 ดีมาก':avg>=70?'🥈 ดี':'🌱 ต้องฝึกเพิ่ม';
+  const today = new Date().toLocaleDateString('th-TH',{day:'numeric',month:'long',year:'numeric'});
+  $('content').innerHTML = `
+    <div class="cert">
+      <h2 style="color:#2b8a3e">เกียรติบัตรภารกิจรักษ์โลก</h2>
+      <p class="hint">ขอมอบให้แก่</p>
+      <div class="nm">${state.name}</div>
+      <p class="hint">${state.room? state.room:''} ${state.no? 'เลขที่ '+state.no:''}</p>
+      <p style="margin-top:10px">ผู้สำเร็จภารกิจ If-Clause Type 2 ครบทั้ง 5 ด่าน</p>
+      <div class="big">${avg.toFixed(1)}</div>
+      <p style="font-size:1.2rem;font-weight:600">${badge}</p>
+      <table>
+        <tr><th>ด่าน 1</th><th>ด่าน 2</th><th>ด่าน 3</th><th>ด่าน 4</th><th>ด่าน 5</th></tr>
+        <tr><td>${sc[1]}</td><td>${sc[2]}</td><td>${sc[3]}</td><td>${sc[4]}</td><td>${sc[5]}</td></tr>
+      </table>
+      <p class="hint">วันที่ ${today}</p>
+    </div>
+    <div class="no-print" style="margin-top:16px">
+      <button class="btn ok" id="sendBtn" onclick="sendToSheet(${avg})">📤 ส่งคะแนนให้ครู</button>
+      <button class="btn" onclick="window.print()">🖨️ พิมพ์ / บันทึก PDF</button>
+      <button class="btn ghost" onclick="home()">เล่นใหม่</button>
+      <p id="sendStatus" style="min-height:22px;margin:10px 0 0;font-weight:600"></p>
+    </div>`;
+  if(state.sent){
+    $('sendBtn').disabled = true; $('sendBtn').textContent = "✅ ส่งคะแนนแล้ว";
+  }
+}
+
+/* ================= ส่งคะแนนเข้า Google Sheet ================= */
+async function sendToSheet(avg){
+  const btn = $('sendBtn'), st = $('sendStatus');
+  if(!GAS_URL || GAS_URL.indexOf('http') !== 0){
+    st.innerHTML = '<span style="color:#fa5252">ยังไม่ได้ตั้งค่า GAS_URL ในโค้ด</span>'; return;
+  }
+  btn.disabled = true; btn.textContent = "⏳ กำลังส่ง..."; st.innerHTML = '';
+  const p = {
+    name:state.name, room:state.room||'-', no:state.no||'-',
+    s1:state.scores[1], s2:state.scores[2], s3:state.scores[3],
+    s4:state.scores[4], s5:state.scores[5], avg:Number(avg.toFixed(1))
+  };
+  try{
+    const res = await fetch(GAS_URL, {
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify(p)
+    });
+    const data = await res.json();
+    if(data.status === 'ok'){
+      state.sent = true; save();
+      btn.textContent = "✅ ส่งคะแนนแล้ว";
+      st.innerHTML = '<span style="color:#40c057">บันทึกเข้าระบบครูเรียบร้อย</span>';
+    } else throw new Error(data.msg||'server error');
+  }catch(e){
+    btn.disabled = false; btn.textContent = "📤 ส่งคะแนนให้ครู";
+    st.innerHTML = '<span style="color:#fa5252">ส่งไม่สำเร็จ ตรวจอินเทอร์เน็ตแล้วลองอีกครั้ง</span>';
+  }
+}
+
+/* ================= เริ่มต้น ================= */
+try{
+  const s = JSON.parse(localStorage.getItem('ifclause_v2')||'{}');
+  if(s && !hasThai(s.name||'')) Object.assign(state, s);
+}catch(e){}
+home();
+</script>
+</body>
+</html>
